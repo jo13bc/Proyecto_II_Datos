@@ -5,7 +5,7 @@ import java.awt.geom.Point2D;
 public class GVertex<V> {
 
     public GVertex(V info, Point2D.Float position) {
-        this.id = info; 
+        this.info = info; 
         this.position = position;  
         this.distance = 0;
         this.predecessor = null;
@@ -15,12 +15,12 @@ public class GVertex<V> {
         this(info, new Point2D.Float(0f, 0f));
     }
 
-    public void setId(V id){
-        this.id = id;
+    public void setInfo(V info){
+        this.info = info;
     }
     
-    public V getId() {
-        return id;
+    public V getInfo() {
+        return info;
     }
 
     public Point2D.Float getPosition() {
@@ -34,7 +34,7 @@ public class GVertex<V> {
     @Override
     public String toString() {
         return String.format("{%s, (%4.2f, %4.2f), %d}",
-                getId(), getPosition().getX(), getPosition().getY(), getDistance());
+                getInfo(), getPosition().getX(), getPosition().getY(), getDistance());
     }
 
     public GVertex<V> getPredecessor() {
@@ -53,7 +53,7 @@ public class GVertex<V> {
         this.distance = distance;
     }
     
-    private V id;
+    private V info;
     private Point2D.Float position;
     private int distance;
     private GVertex<V> predecessor;

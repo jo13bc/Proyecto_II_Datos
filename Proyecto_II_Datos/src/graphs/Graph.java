@@ -6,7 +6,6 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.List;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
@@ -30,7 +29,7 @@ public class Graph<V, E> {
         Iterator<GVertex<V>> i = vertices.iterator();
         while (i.hasNext()) {
             GVertex<V> t = i.next();
-            if (t.getId().equals(v)) {
+            if (t.getInfo().equals(v)) {
                 r = t;
                 break;
             }
@@ -43,10 +42,10 @@ public class Graph<V, E> {
         Iterator<Edge<V, E>> i = edges.iterator();
         while (i.hasNext()) {
             Edge<V, E> e = i.next();
-            if (e.getHead().getId().equals(v.getId())) {
+            if (e.getHead().getInfo().equals(v.getInfo())) {
                 r.add(e.getTail());
             }
-            if (e.getTail().getId().equals(v.getId())) {
+            if (e.getTail().getInfo().equals(v.getInfo())) {
                 r.add(e.getHead());
             }
         }
@@ -117,8 +116,8 @@ public class Graph<V, E> {
                             hasStarted = true;
                         }
 
-                        System.out.printf("v(%s): %s%n", v0.getId(), p0);
-                        System.out.printf("v(%s): %s%n", v1.getId(), p1);
+                        System.out.printf("v(%s): %s%n", v0.getInfo(), p0);
+                        System.out.printf("v(%s): %s%n", v1.getInfo(), p1);
 
                         t = 0.0;
                         while (t <= 1.0) {
@@ -241,7 +240,7 @@ public class Graph<V, E> {
                     (int) v.getPosition().y - S0 / 2,
                     S0, S0);
 
-            String t = String.format("%s", v.getId());
+            String t = String.format("%s", v.getInfo());
             g.setColor(Color.GRAY);
             g.drawString(t,
                     v.getPosition().x - fm.stringWidth(t) / 2,
@@ -267,10 +266,10 @@ public class Graph<V, E> {
         Iterator<GVertex<V>> i = vertices.iterator();
         while (i.hasNext()) {
             GVertex<V> v = i.next();
-            r.append(String.format("%s: ", v.getId()));
+            r.append(String.format("%s: ", v.getInfo()));
             Iterator<GVertex<V>> j = getAdjacent(v).iterator();
             while (j.hasNext()) {
-                r.append(String.format("%s, ", j.next().getId()));
+                r.append(String.format("%s, ", j.next().getInfo()));
             }
             r.append("\n");
         }
@@ -325,6 +324,14 @@ public class Graph<V, E> {
         }
 
     }
+    
+    public ArrayList<GVertex<V>> getAllVertices(){
+        return vertices;
+    }
+    
+    public ArrayList<Edge<V,E>> getAllEdges(){
+        return edges;
+    }
 
     public ArrayList<GVertex<V>> getShortestPath(GVertex<V> origen, GVertex<V> destino) {
 
@@ -352,7 +359,7 @@ public class Graph<V, E> {
 
     private boolean isInThere(GVertex<Integer> node, ArrayList<GVertex<Integer>> array) {
         for (int i = 0; i < array.size(); i++) {
-            if (array.get(i).getId().equals(node.getId())) {
+            if (array.get(i).getInfo().equals(node.getInfo())) {
                 return true;
             }
         }
