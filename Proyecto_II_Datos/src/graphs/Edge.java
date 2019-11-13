@@ -1,5 +1,7 @@
 package graphs;
 
+
+
 public class Edge<V, E> {
 
     public Edge(GVertex<V> tail, GVertex<V> head, E info) {

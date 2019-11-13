@@ -1,5 +1,7 @@
 package graphs;
 
+
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
@@ -7,12 +9,12 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Observable;
 import java.util.Queue;
 import java.util.Stack;
@@ -37,8 +39,8 @@ public class Graph<V, E> {
         return r;
     }
 
-    public ArrayList<GVertex<V>> getAdjacent(GVertex<V> v) {
-        ArrayList<GVertex<V>> r = new ArrayList<>();
+    public List<GVertex<V>> getAdjacent(GVertex<V> v) {
+        List<GVertex<V>> r = new LinkedList<>();
         Iterator<Edge<V, E>> i = edges.iterator();
         while (i.hasNext()) {
             Edge<V, E> e = i.next();
@@ -125,15 +127,16 @@ public class Graph<V, E> {
                             try {
                                 /*la velocidad en una arista (calle) es MAX_WAIT multiplicado por el peso de
                                 la arista en ese momento*/
-                                Thread.sleep(MAX_WAIT*thereRelation(v1.getPredecessor(), v1).getInfo());
+                                Thread.sleep(MAX_WAIT * thereRelation(v1.getPredecessor(), v1).getInfo());
                             } catch (InterruptedException ex) {
                             }
                         }
                         v0 = v1;
                     } catch (NullPointerException ex) {
                         System.err.println("Hay que eliminar el thread but idk");
-                        if(pila.isEmpty())
+                        if (pila.isEmpty()) {
                             break;
+                        }
                     }
                 }
             }
@@ -183,25 +186,13 @@ public class Graph<V, E> {
     public void paint(Graphics bg, Rectangle bounds) {
         Graphics2D g = (Graphics2D) bg;
 
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
-        g.setColor(Color.DARK_GRAY);
-        g.setStroke(TRAZO_GUIA);
-        Rectangle b = getBounds();
-        g.drawRect(b.x, b.y, b.width, b.height);
-
-        g.setFont(TIPO_BASE);
-        FontMetrics fm = g.getFontMetrics();
-
         Iterator<Edge<V, E>> i = edges.iterator();
         while (i.hasNext()) {
             Edge<V, E> e = i.next();
+
             g.setStroke(TRAZO_BASE);
             g.setColor(Color.WHITE);
-            
+
             /*LO QUE MAS PUEDE ASEMEJARSE(SIMULAR) EL CAMINO (LA CALLE)*/
             g.drawLine(
                     (int) e.getTail().getPosition().x,
@@ -209,51 +200,44 @@ public class Graph<V, E> {
                     (int) e.getHead().getPosition().x,
                     (int) e.getHead().getPosition().y
             );
-
-            g.setStroke(new BasicStroke(1f));
-            g.setColor(Color.BLACK);
-            
-//          LINEAS MUY FINAS QUE CONECTAN NODOS (DENTRO DE LA "CALLE")
-            g.drawLine(
-                    (int) e.getTail().getPosition().x,
-                    (int) e.getTail().getPosition().y,
-                    (int) e.getHead().getPosition().x,
-                    (int) e.getHead().getPosition().y
-            );
         }
+
+        g.setFont(TIPO_BASE);
+        FontMetrics fm = g.getFontMetrics();
 
         g.setStroke(TRAZO_VERTICE);
         Iterator<GVertex<V>> j = vertices.iterator();
         while (j.hasNext()) {
             GVertex<V> v = j.next();
 
-            g.setColor(Color.GRAY);
-            g.fillOval((int) v.getPosition().x - S0 / 2 + 4,
-                    (int) v.getPosition().y - S0 / 2 + 4,
-                    S0, S0);
-            g.setColor(Color.WHITE);
-            g.fillOval((int) v.getPosition().x - S0 / 2,
-                    (int) v.getPosition().y - S0 / 2,
-                    S0, S0);
-            g.setColor(Color.BLACK);
-            g.drawOval((int) v.getPosition().x - S0 / 2,
-                    (int) v.getPosition().y - S0 / 2,
-                    S0, S0);
-
             String t = String.format("%s", v.getInfo());
-            g.setColor(Color.GRAY);
+            g.setColor(Color.BLACK);
             g.drawString(t,
                     v.getPosition().x - fm.stringWidth(t) / 2,
                     v.getPosition().y + fm.getAscent() / 2);
         }
-
         if (p0 != null) {
+
             g.setStroke(TRAZO_MARCADOR);
-            g.setColor(Color.RED);
+
+            g.setColor(Color.ORANGE);
+            g.drawLine(
+                    (int) p0.x,
+                    (int) p0.y,
+                    (int) p1.x,
+                    (int) p1.y
+            );
+
+            g.setColor(Color.BLACK);
             g.drawOval(
                     (int) ((p0.x + t * (p1.x - p0.x)) - S1 / 2),
                     (int) ((p0.y + t * (p1.y - p0.y)) - S1 / 2),
                     S1, S1);
+            g.setColor(Color.ORANGE);
+            g.drawOval(
+                    (int) ((p0.x + t * (p1.x - p0.x)) - S2 / 2),
+                    (int) ((p0.y + t * (p1.y - p0.y)) - S2 / 2),
+                    S2, S2);
         }
     }
 
@@ -282,10 +266,7 @@ public class Graph<V, E> {
         Queue<GVertex<Integer>> toEvaluate = new LinkedList<>();
         ArrayList<GVertex<Integer>> closedList = new ArrayList<>();
 
-        boolean flag = true;
-
-        for (int i = 0; i < vertices.size(); i++) {
-            GVertex<Integer> aux = (GVertex<Integer>) vertices.get(i);
+        vertices.stream().map((v) -> (GVertex<Integer>)v).forEachOrdered((aux) -> {
             if (aux.equals(origen)) {
                 aux.setDistance(0);
                 aux.setPredecessor(null);
@@ -294,42 +275,35 @@ public class Graph<V, E> {
                 aux.setDistance(Integer.MAX_VALUE);
                 aux.setPredecessor(null);
             }
-        }
+        });
 
         while (!toEvaluate.isEmpty()) {
             GVertex<Integer> evaluating = toEvaluate.remove();
 
-            ArrayList<GVertex<V>> l = getAdjacent((GVertex<V>) evaluating);
-
-            for (int i = 0; i < l.size(); i++) {
-
-                GVertex<Integer> aux = (GVertex<Integer>) l.get(i);
+            getAdjacent((GVertex<V>) evaluating).stream().map((v) -> (GVertex<Integer>)v).map((aux) -> {
                 if (thereRelation((GVertex<V>) evaluating, (GVertex<V>) aux) != null) {
                     Edge<GVertex<V>, Integer> edge = thereRelation((GVertex<V>) evaluating, (GVertex<V>) aux);
                     if (aux.getDistance() > evaluating.getDistance() + (int) edge.getInfo()) {
                         aux.setDistance(evaluating.getDistance() + (int) edge.getInfo());
                         aux.setPredecessor(evaluating);
                     }
-
                 }
                 /*Agregar a toEvaluate si no esta en closedList*/
-                if (!isInThere(aux, closedList)) {
-                    toEvaluate.add((GVertex<Integer>) aux);
-                }
-
-            }
-
+                return aux;
+            }).filter((aux) -> (!isInThere(aux, closedList))).forEachOrdered((aux) -> {
+                toEvaluate.add((GVertex<Integer>) aux);
+            });
             closedList.add(evaluating);
 
         }
 
     }
-    
-    public ArrayList<GVertex<V>> getAllVertices(){
+
+    public ArrayList<GVertex<V>> getAllVertices() {
         return vertices;
     }
-    
-    public ArrayList<Edge<V,E>> getAllEdges(){
+
+    public ArrayList<Edge<V, E>> getAllEdges() {
         return edges;
     }
 
@@ -349,21 +323,25 @@ public class Graph<V, E> {
     }
 
     public Edge<GVertex<V>, Integer> thereRelation(GVertex<V> tail, GVertex<V> head) {
-        for (int i = 0; i < edges.size(); i++) {
-            if (edges.get(i).getTail().equals(tail) && edges.get(i).getHead().equals(head)) {
-                return (Edge<GVertex<V>, Integer>) edges.get(i);
+        Edge<GVertex<V>, Integer> res = null;
+        for (Edge<V, E> v : edges) {
+            if (v.getTail().equals(tail) && v.getHead().equals(head)) {
+                res = (Edge<GVertex<V>, Integer>)v;
+                break;
             }
         }
-        return null;
+        return res;
     }
 
     private boolean isInThere(GVertex<Integer> node, ArrayList<GVertex<Integer>> array) {
-        for (int i = 0; i < array.size(); i++) {
-            if (array.get(i).getInfo().equals(node.getInfo())) {
-                return true;
+        boolean res = false;
+        for (GVertex<Integer> v : array) {
+            if (v.getInfo().equals(node.getInfo())) {
+                res = true;
+                break;
             }
         }
-        return false;
+        return res;
     }
 
     //////////////////////////////////////////
@@ -377,10 +355,12 @@ public class Graph<V, E> {
 
     private static final float[] DASHES = {4f, 4f};
     private static final Stroke TRAZO_BASE
-            = new BasicStroke(12f,
+            = new BasicStroke(5f,
                     BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0f, null, 0f);
     private static final Stroke TRAZO_VERTICE = new BasicStroke(2f);
-    private static final Stroke TRAZO_MARCADOR = new BasicStroke(8f);
+    private static final Stroke TRAZO_MARCADOR
+            = new BasicStroke(8f,
+                    BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0f, null, 0f);
 
     private static final Stroke TRAZO_GUIA
             = new BasicStroke(1.0f,
@@ -389,8 +369,9 @@ public class Graph<V, E> {
     private static final Font TIPO_BASE
             = new Font(Font.SANS_SERIF, Font.PLAIN, 24);
 
-    private static final int S0 = 48; //tamano de los nodos
-    private static final int S1 = 56; //tamano del circulo rojo que se mueve
+    private static final int S0 = 5; //tamano de los nodos
+    private static final int S1 = 20; //tamano del circulo rojo que se mueve
+    private static final int S2 = S1 - S1 / 2; //tamano del circulo rojo que se mueve
 
     private static final int DX = 72;
     private static final int DY = 64;

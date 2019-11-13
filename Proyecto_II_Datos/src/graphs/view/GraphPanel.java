@@ -4,6 +4,11 @@ import graphs.Graph;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
 public class GraphPanel<V, E> extends JPanel {
@@ -37,7 +42,13 @@ public class GraphPanel<V, E> extends JPanel {
     @Override
     public void paintComponent(Graphics bg) {
         super.paintComponent(bg);
-
+        Image backgroundImage;
+        try {
+            backgroundImage = ImageIO.read(new File("src/images/Heredia.png"));
+            bg.drawImage(backgroundImage, 0, 0, this);
+        } catch (IOException ex) {
+            Logger.getLogger(GraphPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
         g.paint(bg, getBounds());
     }
 
